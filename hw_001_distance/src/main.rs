@@ -1,7 +1,58 @@
-// There should be implementations of calculate distance function
+extern crate haversine;
+
+type Point = (f64, f64, u64);
+
+const DUMMY_POINT: Point = (0.0, 0.0, 0);
+
+fn calculate_distance(points: &[Point; 353], start_time: u64, stop_time: u64) -> f64 {
+    let mut distance: f64 = 0.0;
+    let mut start: Point = *points.first().unwrap_or(&DUMMY_POINT);
+    let mut stop: Point = DUMMY_POINT;
+
+    points.iter().for_each(|point: &Point| {
+        let timestamp: u64 = point.2;
+
+        if between(start_time, stop_time, timestamp) {
+            (start, stop) = set_start_stop(start, stop, *point);
+            distance += calc_distance(start, stop)
+        }
+    });
+
+    distance
+}
+
+fn set_start_stop(start: Point, stop: Point, point: Point) -> (Point, Point) {
+    if empty_location(start) {
+        (point, stop)
+    } else if empty_location(stop) {
+        (start, point)
+    } else {
+        (stop, point)
+    }
+}
+
+fn calc_distance(start: Point, stop: Point) -> f64 {
+    let start1 = haversine::Location {
+        latitude: start.0,
+        longitude: start.1,
+    };
+    let stop1 = haversine::Location {
+        latitude: stop.0,
+        longitude: stop.1,
+    };
+    haversine::distance(start1, stop1, haversine::Units::Kilometers)
+}
+
+fn empty_location(point: Point) -> bool {
+    point == DUMMY_POINT
+}
+
+fn between(start_time: u64, stop_time: u64, timestamp: u64) -> bool {
+    timestamp >= start_time && timestamp <= stop_time
+}
 
 fn main() {
-    let points = [
+    let points: [Point; 353] = [
         (53.91156568000922f64, 27.404921154957268f64, 1657550716u64),
         (53.90974558370663f64, 27.387755017261956f64, 1657550745u64),
         (53.907723161451074f64, 27.375052075367424f64, 1657550767u64),
@@ -358,11 +409,7 @@ fn main() {
     ];
 
     println!(
-        "All distance: {}",
-        calculate_distance(points, 1657550716u64, 1657555118u64)
+        "All distance: {} km",
+        calculate_distance(&points, 1657550716u64, 1657555118u64)
     );
-}
-
-fn calculate_distance(points: [(f64, f64, u64); 353], start_time: u64, stop_time: u64) -> f64 {
-    
 }

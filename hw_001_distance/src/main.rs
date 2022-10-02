@@ -14,7 +14,7 @@ fn calculate_distance(points: &[Point; 353], start_time: u64, stop_time: u64) ->
 
         if between(start_time, stop_time, timestamp) {
             (start, stop) = set_start_stop(start, stop, *point);
-            distance += calc_distance(start, stop)
+            distance += get_distance(start, stop)
         }
     });
 
@@ -31,7 +31,7 @@ fn set_start_stop(start: Point, stop: Point, point: Point) -> (Point, Point) {
     }
 }
 
-fn calc_distance(start: Point, stop: Point) -> f64 {
+fn get_distance(start: Point, stop: Point) -> f64 {
     let start1 = haversine::Location {
         latitude: start.0,
         longitude: start.1,

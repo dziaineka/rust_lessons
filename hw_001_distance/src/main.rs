@@ -1,34 +1,21 @@
-extern crate haversine;
-
 type Point = (f64, f64, u64);
 
-const DUMMY_POINT: Point = (0.0, 0.0, 0);
+fn calculate_distance(points: &[Point], start_time: u64, stop_time: u64) -> f64 {
+    let mut distance = 0.0;
+    let mut previous_point: Option<Point> = None;
 
-fn calculate_distance(points: &[Point; 353], start_time: u64, stop_time: u64) -> f64 {
-    let mut distance: f64 = 0.0;
-    let mut start: Point = *points.first().unwrap_or(&DUMMY_POINT);
-    let mut stop: Point = DUMMY_POINT;
-
-    points.iter().for_each(|point: &Point| {
-        let timestamp: u64 = point.2;
+    for point in points {
+        let timestamp = point.2;
 
         if between(start_time, stop_time, timestamp) {
-            (start, stop) = set_start_stop(start, stop, *point);
-            distance += get_distance(start, stop)
+            if let Some(previous_point) = previous_point {
+                distance += get_distance(previous_point, *point);
+            }
+            previous_point = Some(*point);
         }
-    });
+    }
 
     distance
-}
-
-fn set_start_stop(start: Point, stop: Point, point: Point) -> (Point, Point) {
-    if empty_location(start) {
-        (point, stop)
-    } else if empty_location(stop) {
-        (start, point)
-    } else {
-        (stop, point)
-    }
 }
 
 fn get_distance(start: Point, stop: Point) -> f64 {
@@ -41,10 +28,6 @@ fn get_distance(start: Point, stop: Point) -> f64 {
         longitude: stop.1,
     };
     haversine::distance(start1, stop1, haversine::Units::Kilometers)
-}
-
-fn empty_location(point: Point) -> bool {
-    point == DUMMY_POINT
 }
 
 fn between(start_time: u64, stop_time: u64, timestamp: u64) -> bool {

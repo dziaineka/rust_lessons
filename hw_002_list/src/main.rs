@@ -62,7 +62,6 @@ impl ListNode {
             current_node = &node.next;
         }
 
-        println!("{:#?}", &start_node);
         start_node
     }
 
